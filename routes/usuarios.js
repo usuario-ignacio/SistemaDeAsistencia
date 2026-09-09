@@ -10,31 +10,33 @@ const bcrypt = require('bcrypt');
 //----------------------------------------------------------------
 router.post('/login-comprobar', (request, response) => {
 
-  //Revisa todo el request
   console.log("Request desde el formulario:", request.body);
 
-  //Obtengo los datos que llegan desde la capa de presentacion
   const usuario = request.body.usuario;
   const clave = request.body.clave;
 
-  //Lógica, validaciones, operaciones en backend, inteligencia
-  //.....
-  //.....
+  // 1. Modificación: Buscar únicamente por usuario
+  const sql = 'SELECT usuario, clave, rol FROM usuario WHERE usuario = ?';
 
-  const sql = 'SELECT usuario, clave, rol FROM usuario WHERE usuario=? AND clave =? ';
-
-  //Setea los valores (nombre , apellido) como par ordenado a values (?,?) y ejecuta
-  db.query(sql, [usuario, clave], async (err, respuesta) => {
-    if (err) { //si existe error
+  // 2. Modificación: Pasar solo el parámetro usuario
+  db.query(sql, [usuario], async (err, respuesta) => {
+    
+    if (err) { 
       console.log('Error conexión:', err);
-      response.status(500).json({ exito: false }); //HTTP Response fallido
+      return response.status(500).json({ exito: false }); // 3. Se añade return
     }
 
-    const hashGuardado = resultados[0].clave;
-    const esValida = await bcrypt.compare(claveFrente, hashGuardado);
+    // 4. Nueva validación para evitar errores si el usuario no existe en la BD
+    if (respuesta.length === 0) {
+      console.log('Usuario no encontrado');
+      return response.status(401).json({ message: 'Credenciales inválidas' });
+    }
+
+    // 5. Corrección de variables: usar 'respuesta' y 'clave'
+    const hashGuardado = respuesta[0].clave;
+    const esValida = await bcrypt.compare(clave, hashGuardado);
 
     if (esValida) {
-
       const rolresponse = respuesta[0].rol;
 
       if (rolresponse === 'administrador') {
@@ -44,12 +46,10 @@ router.post('/login-comprobar', (request, response) => {
         response.status(200).json({ exito: true, rol: 'usuario' });
       }
     } else {
-      console.log('Credenciales incorrectas')
-      response.status(300).json({ message : 'Credenciales invalidas'})
+      console.log('Credenciales incorrectas');
+      response.status(401).json({ message : 'Credenciales inválidas' });
     }
-
   });
-
 });
 
 //----------------------------------------------------------------
