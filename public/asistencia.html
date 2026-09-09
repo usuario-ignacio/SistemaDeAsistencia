@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        .botones-container { display: flex; justify-content: center; gap: 20px; margin-top: 50px; flex-wrap: wrap; }
+        /* Botones grandes y distintivos */
+        .btn { padding: 20px 40px; font-size: 20px; border: none; border-radius: 8px; cursor: pointer; color: white; width: 250px; }
+        .btn-entrada { background-color: #28a745; }
+        .btn-salida { background-color: #dc3545; }
+        .btn-cerrar { margin-top: 40px; padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Bienvenido</h1>
+    <p>Seleccione su acción para registrar la hora actual:</p>
+    
+    <div class="botones-container">
+        <button class="btn btn-entrada" id="btnEntrada">Marcar Entrada</button>
+        <button class="btn btn-salida" id="btnSalida">Marcar Salida</button>
+    </div>
+
+    <!-- Botón para el flujo alterno de cierre de sesión -->
+    <button class="btn-cerrar" id="btnCerrarSesion">Cerrar Sesión</button>
+</body>
+</html>

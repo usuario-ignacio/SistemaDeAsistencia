@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrador - Sistema de Asistencia</title>
+    <!-- Aquí vinculamos el archivo de estilos dedicado -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Menú Lateral -->
+    <div class="sidebar">
+        <h2>Panel Admin</h2>
+        <button onclick="mostrarSeccion('gestionUsuarios')">Gestión de Usuarios</button>
+        <button onclick="mostrarSeccion('reporteAtrasos')">Reporte de Atrasos</button>
+        <button onclick="mostrarSeccion('reporteSalidas')">Salidas Anticipadas</button>
+        <button onclick="mostrarSeccion('reporteInasistencias')">Inasistencias</button>
+        <button class="btn-cerrar-sesion">Cerrar Sesión</button>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="content">
+        
+        <!-- SECCIÓN: Gestión de Usuarios (GU-01, GU-02, GU-03) -->
+        <div id="gestionUsuarios" class="section active">
+            <h3>Administración de Usuarios</h3>
+            <p>El administrador puede crear usuarios, modificar usuarios y eliminar usuarios del sistema[cite: 1].</p>
+            
+            <div class="form-group">
+                <label for="idUsuario">ID de Usuario (Para modificar o eliminar):</label>
+                <input type="text" id="idUsuario" placeholder="Ej. 1023">
+            </div>
+            <div class="form-group">
+                <label for="correoUsuario">Correo Electrónico:</label>
+                <input type="email" id="correoUsuario" placeholder="correo@empresa.cl">
+            </div>
+            <div class="form-group">
+                <label for="passUsuario">Contraseña:</label>
+                <input type="password" id="passUsuario" placeholder="Contraseña">
+            </div>
+            
+            <button class="btn-action btn-crear">Crear Usuario</button>
+            <button class="btn-action btn-modificar">Modificar Usuario</button>
+            <button class="btn-action btn-eliminar">Eliminar Usuario</button>
+        </div>
+
+        <!-- SECCIÓN: Reporte de Atrasos (RE-01) -->
+        <div id="reporteAtrasos" class="section">
+            <h3>Reporte de Entradas Atrasadas (Post 9:30 AM)</h3>
+            <p>Reporte de todos y todas aquellas que entre post 9:30 am[cite: 1].</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identificador del Usuario</th>
+                        <th>Días que llegó atrasado</th>
+                        <th>Hora Registrada</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaAtrasos">
+                    <!-- Los datos dinámicos irán aquí -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN: Reporte de Salidas Anticipadas (RE-02) -->
+        <div id="reporteSalidas" class="section">
+            <h3>Reporte de Salidas Anticipadas (Antes 17:30 PM)</h3>
+            <p>Reporte de todos y todas aquellas que salgan antes de las 17:30 pm[cite: 1].</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identificador del Usuario</th>
+                        <th>Días que salió anticipadamente</th>
+                        <th>Hora Registrada</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaSalidas">
+                    <!-- Los datos dinámicos irán aquí -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN: Reporte de Inasistencias (RE-03) -->
+        <div id="reporteInasistencias" class="section">
+            <h3>Reporte de Inasistencias</h3>
+            <p>Reporte de todos y todas aquellas que no registraron ni entrada ni salida un día[cite: 1].</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identificador del Usuario</th>
+                        <th>Días sin registro</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaInasistencias">
+                    <!-- Los datos dinámicos irán aquí -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        function mostrarSeccion(idSeccion) {
+            document.querySelectorAll('.section').forEach(seccion => {
+                seccion.classList.remove('active');
+            });
+            document.getElementById(idSeccion).classList.add('active');
+        }
+    </script>
+</body>
+</html>
