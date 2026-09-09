@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); //importar
+const bcrypt = require('bcrypt');
 
 
 //----------------------------------------------------------------
@@ -23,13 +24,16 @@ router.post('/login-comprobar', (request, response) => {
   const sql = 'SELECT usuario, clave, rol FROM usuario WHERE usuario=? AND clave =? ';
 
   //Setea los valores (nombre , apellido) como par ordenado a values (?,?) y ejecuta
-  db.query(sql, [usuario, clave], (err, respuesta) => {
+  db.query(sql, [usuario, clave], async (err, respuesta) => {
     if (err) { //si existe error
       console.log('Error conexión:', err);
       response.status(500).json({ exito: false }); //HTTP Response fallido
     }
 
-    if (respuesta.length > 0) {
+    const hashGuardado = resultados[0].clave;
+    const esValida = await bcrypt.compare(claveFrente, hashGuardado);
+
+    if (esValida) {
 
       const rolresponse = respuesta[0].rol;
 
@@ -40,8 +44,8 @@ router.post('/login-comprobar', (request, response) => {
         response.status(200).json({ exito: true, rol: 'usuario' });
       }
     } else {
-      console.log('bymaasd')
-      response.status(300).json({ exito: false })
+      console.log('Credenciales incorrectas')
+      response.status(300).json({ message : 'Credenciales invalidas'})
     }
 
   });
@@ -52,7 +56,7 @@ router.post('/login-comprobar', (request, response) => {
 //------------------ Registro de usuario -------------------------
 //----------------------------------------------------------------
 
-router.post('/registro-usuario', (request, response) => {
+router.post('/registro-usuario', async (request, response) => {
 
   //Revisa todo el request
   console.log("Request desde el formulario:", request.body);
@@ -63,14 +67,24 @@ router.post('/registro-usuario', (request, response) => {
   const email = request.body.email;
   const numero = request.body.numero;
 
+  const saltRounds = 10;
+
+  try {
+        // 1. Convertir la clave plana en un hash irreversible
+        const claveHasheada = await bcrypt.hash(clave, saltRounds);
+
+        // 2. Insertar en la tabla usando la variable encriptada (claveHasheada)
+        const sqlInsert = `
+            INSERT INTO usuario (usuario, clave, rol, email, numero) 
+            VALUES (?, ?, 'usuario', ?, ?)
+        `;
+
   //Lógica, validaciones, operaciones en backend, inteligencia
   //.....
   //.....
 
-  const sql = 'INSERT INTO usuario (usuario, clave, email, numero) VALUES (?,?,?,?)';
-
   //Setea los valores (nombre , apellido) como par ordenado a values (?,?) y ejecuta
-  db.query(sql, [usuario, clave, email, numero], (err, respuesta) => {
+  db.query(sqlInsert, [usuario, claveHasheada, email, numero], (err, respuesta) => {
     if (err) { //si existe error
       console.log('Error conexión:', err);
       return response.status(500).json({ exito: false }); //HTTP Response fallido
@@ -82,15 +96,15 @@ router.post('/registro-usuario', (request, response) => {
       message: 'Datos creados exitosamente'
     });
 
-
   });
-
-
+  } catch (error) {
+        response.status(500).json({ exito: false, message: 'Error al procesar la contraseña' });
+    }
 
 });
 
 //----------------------------------------------------------------
-// ---------------- ELIMINA UNA NOTICIA ESPECIFICA ---------------
+// ---------------- ELIMINA UN USUARIO ESPECIFICO ---------------
 //----------------------------------------------------------------
 router.delete('/usuario/:id', (request, response) => {
 
