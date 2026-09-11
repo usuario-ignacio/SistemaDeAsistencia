@@ -87,7 +87,7 @@ router.post('/registro-usuario', async (request, response) => {
             INSERT INTO usuario (usuario, clave, rol, email, numero) 
             VALUES (?, ?, 'usuario', ?, ?)
         `;
-
+  
   //Lógica, validaciones, operaciones en backend, inteligencia
   //.....
   //.....
@@ -155,7 +155,7 @@ router.delete('/usuario/:id', (request, response) => {
 //----------------------------------------------------------------
 // ------------ ACTUALIZA UNA NOTICIA ESPECIFICA -----------------
 //----------------------------------------------------------------
-router.put('/usuario/:id', (request, response) => {
+router.put('/usuario/:id', async (request, response) => {
 
   const id = request.params.id; //obtiene parametro id
 
@@ -166,13 +166,20 @@ router.put('/usuario/:id', (request, response) => {
   const numero = request.body.numero;
 
 
+  const saltRounds = 10;
+
+  try {
+        // 1. Convertir la clave plana en un hash irreversible
+        const claveHasheada = await bcrypt.hash(clave, saltRounds);
+
+        
   const sql = `
     UPDATE usuario
     SET usuario = ?, clave = ?, email = ?, numero = ?
     WHERE id_usuario = ?
   `;
 
-  db.query(sql, [usuario, clave, email, numero, id], (error) => {
+  db.query(sql, [usuario, claveHasheada, email, numero, id], (error) => {
 
     if (error) {
 
@@ -193,6 +200,9 @@ router.put('/usuario/:id', (request, response) => {
     });
 
   });
+  } catch (error) {
+        response.status(500).json({ exito: false, message: 'Error al procesar la contraseña' });
+    }
 
 });
 
