@@ -153,7 +153,7 @@ router.delete('/usuario/:id', (request, response) => {
 });
 
 //----------------------------------------------------------------
-// ------------ ACTUALIZA UNA NOTICIA ESPECIFICA -----------------
+// ------------ ACTUALIZA UN USUARIO ESPECIFICO -----------------
 //----------------------------------------------------------------
 router.put('/usuario/:id', async (request, response) => {
 
