@@ -325,6 +325,28 @@ router.get('/reporte-inasistencia', (request, response) => {
     });
 });
 
+// ---- NUEVO ENDPOINT: OBTENER DATOS EN JSON PARA LAS TABLAS DEL DASHBOARD ----
+router.get('/datos-json', (request, response) => {
+    
+    const tipo = request.query.tipo; // Recibirá 'Atraso', 'Anticipado' o 'Inasistencia'
+    
+    const opcionesFecha = { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const fecha = new Intl.DateTimeFormat('en-CA', opcionesFecha).format(new Date());
+
+    const sqlSelect = `
+        SELECT u.usuario, a.fecha, a.marca 
+        FROM asistencia a
+        JOIN usuario u ON a.id_usuario = u.id_usuario
+        WHERE DATE(a.fecha) = ? AND a.tipo = ?
+    `;
+
+    db.query(sqlSelect, [fecha, tipo], (error, resultados) => {
+        if (error) {
+            return response.status(500).json({ exito: false, message: 'Error de BD' });
+        }
+        response.status(200).json({ exito: true, data: resultados });
+    });
+});
 
 
 module.exports = router; // exporta este router para poder usarlo en server.js

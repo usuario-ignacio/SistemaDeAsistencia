@@ -23,5 +23,5 @@ app.use(reporte);
 
 //Muestra la ruta y el puerto escuchando
 app.listen(PORT, () => {
-  console.log(`Servidor en http://localhost:${PORT}`);
+  console.log(`Servidor en http://localhost:${PORT}/login.html`);
 });

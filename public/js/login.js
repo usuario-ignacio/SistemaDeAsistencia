@@ -5,7 +5,7 @@
 
 // --- Referencias a elementos que YA EXISTEN en index.html ---
 const formularioLogin = document.querySelector('#loginForm');
-const inputUsuario = document.querySelector('#correo'); // el id real en el HTML es "correo"
+const inputUsuario = document.querySelector('#usuario'); // el id real en el HTML es "correo"
 const inputClave = document.querySelector('#password');
 
 // --- Ajuste necesario en runtime, sin tocar el HTML ---

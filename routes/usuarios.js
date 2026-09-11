@@ -16,7 +16,7 @@ router.post('/login-comprobar', (request, response) => {
   const clave = request.body.clave;
 
   // 1. Modificación: Buscar únicamente por usuario
-  const sql = 'SELECT usuario, clave, rol FROM usuario WHERE usuario = ?';
+  const sql = 'SELECT id_usuario, usuario, clave, rol FROM usuario WHERE usuario = ?';
 
   // 2. Modificación: Pasar solo el parámetro usuario
   db.query(sql, [usuario], async (err, respuesta) => {
@@ -38,12 +38,21 @@ router.post('/login-comprobar', (request, response) => {
 
     if (esValida) {
       const rolresponse = respuesta[0].rol;
+      const idUsuarioObtenido = respuesta[0].id_usuario; // Extraemos el ID
 
-      if (rolresponse === 'administrador') {
-        response.status(200).json({ exito: true, rol: 'administrador' });
+      if (rolresponse === 'admin' || rolresponse === 'administrador') {
+        response.status(200).json({ 
+            exito: true, 
+            rol: 'administrador', 
+            id_usuario: idUsuarioObtenido // ¡Enviamos el ID!
+        });
       }
-      else if (rolresponse === 'usuario') {
-        response.status(200).json({ exito: true, rol: 'usuario' });
+      else { // Asumimos rol usuario si no es admin
+        response.status(200).json({ 
+            exito: true, 
+            rol: 'usuario', 
+            id_usuario: idUsuarioObtenido // ¡Enviamos el ID!
+        });
       }
     } else {
       console.log('Credenciales incorrectas');

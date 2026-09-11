@@ -82,5 +82,5 @@ btnSalida.addEventListener('click', () => registrarAsistencia('salida'));
 
 btnCerrarSesion.addEventListener('click', () => {
   localStorage.clear();
-  window.location.href = 'index.html';
+  window.location.href = 'login.html';
 });

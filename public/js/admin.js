@@ -25,29 +25,10 @@ const btnCrear = document.querySelector('.btn-crear');
 const btnModificar = document.querySelector('.btn-modificar');
 const btnEliminar = document.querySelector('.btn-eliminar');
 
-// ⚠️ El HTML original de #gestionUsuarios NO tiene inputs para "usuario"
-// (nombre de usuario) ni "numero", pero el backend los exige en
-// /registro-usuario y PUT /usuario/:id. Como no debo modificar el HTML,
-// los creo en tiempo de ejecución (JS puro, con innerHTML) y los inserto
-// justo antes del botón "Crear Usuario". Esto NO cambia el archivo .html,
-// solo agrega elementos al DOM cuando la página ya cargó.
-function crearGrupoInput(id, labelTexto, placeholder) {
-  const grupo = document.createElement('div');
-  grupo.className = 'form-group';
-  grupo.innerHTML = `
-    <label for="${id}">${labelTexto}:</label>
-    <input type="text" id="${id}" placeholder="${placeholder}">
-  `;
-  return grupo;
-}
 
-const grupoNombreUsuario = crearGrupoInput('nombreUsuarioJS', 'Nombre de Usuario', 'Ej. jperez');
-const grupoNumero = crearGrupoInput('numeroUsuarioJS', 'Número de Contacto', 'Ej. 912345678');
-seccionUsuarios.insertBefore(grupoNombreUsuario, btnCrear);
-seccionUsuarios.insertBefore(grupoNumero, btnCrear);
 
-const inputNombreUsuario = document.querySelector('#nombreUsuarioJS');
-const inputNumero = document.querySelector('#numeroUsuarioJS');
+const inputNombreUsuario = document.querySelector('#nombreUsuario');
+const inputNumero = document.querySelector('#numeroUsuario');
 
 // Mensaje de resultado: tampoco existe en el HTML original, se crea en runtime
 const mensajeAdmin = document.createElement('p');
@@ -146,46 +127,81 @@ btnEliminar.addEventListener('click', async () => {
 // ============================================================
 // SECCIÓN 2: REPORTES (Atrasos / Salidas Anticipadas / Inasistencias)
 // ============================================================
-//
-// ⚠️ LIMITACIÓN DE BACKEND (solo documentada, no se resuelve aquí):
-// Los únicos endpoints de reportes que existen (routes/reporte.js:
-// /reporte-atrasos, /reporte-anticipados, /reporte-inasistencia)
-// generan y devuelven un archivo PDF, no JSON. Un fetch() de cliente
-// no puede tomar un PDF binario y pintarlo como filas de tabla —
-// haría falta un endpoint que devuelva { data: [...] }, que no existe
-// y no me corresponde crear en esta entrega (solo lógica de cliente).
-//
-// Como alternativa 100% de cliente, dejo un aviso dentro de cada tabla
-// y agrego un botón "Descargar Reporte PDF" que abre el PDF que el
-// backend ya sabe generar.
 
 const reportesConfig = [
-  { idSeccion: 'reporteAtrasos', idTabla: 'tablaAtrasos', endpoint: '/reporte-atrasos', columnas: 3 },
-  { idSeccion: 'reporteSalidas', idTabla: 'tablaSalidas', endpoint: '/reporte-anticipados', columnas: 3 },
-  { idSeccion: 'reporteInasistencias', idTabla: 'tablaInasistencias', endpoint: '/reporte-inasistencia', columnas: 2 }
+  { idSeccion: 'reporteAtrasos', idTabla: 'tablaAtrasos', endpointPdf: '/reporte-atrasos', tipoBD: 'Atraso' },
+  { idSeccion: 'reporteSalidas', idTabla: 'tablaSalidas', endpointPdf: '/reporte-anticipados', tipoBD: 'Anticipado' },
+  { idSeccion: 'reporteInasistencias', idTabla: 'tablaInasistencias', endpointPdf: '/reporte-inasistencia', tipoBD: 'Inasistencia' }
 ];
 
-reportesConfig.forEach(({ idSeccion, idTabla, endpoint, columnas }) => {
-  const seccion = document.querySelector(`#${idSeccion}`);
-  const tbody = document.querySelector(`#${idTabla}`);
+// Función para obtener los datos JSON y pintar la tabla
+async function cargarTablaReporte(config) {
+  const tbody = document.querySelector(`#${config.idTabla}`);
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cargando registros de hoy...</td></tr>';
 
-  // Fila explicativa dentro de la tabla (por qué no hay filas de datos reales)
-  const fila = document.createElement('tr');
-  const celda = document.createElement('td');
-  celda.colSpan = columnas;
-  celda.textContent = 'Este reporte se genera como PDF (no hay endpoint en JSON todavía). Usa el botón de abajo para descargarlo.';
-  fila.appendChild(celda);
-  tbody.appendChild(fila);
+  try {
+    // Llama al nuevo endpoint que creamos en reporte.js
+    const response = await fetch(`/datos-json?tipo=${config.tipoBD}`);
+    const jsonResponse = await response.json();
 
-  // Botón de descarga, creado en runtime
+    if (jsonResponse.exito) {
+      tbody.innerHTML = ''; // Limpiamos el mensaje de carga
+      
+      if (jsonResponse.data.length === 0) {
+         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay registros de este tipo hoy.</td></tr>';
+         return;
+      }
+
+      // Rellenamos la tabla iterando sobre los datos
+      jsonResponse.data.forEach(registro => {
+        const fila = document.createElement('tr');
+        
+        // Adaptar las columnas según la tabla (Inasistencia tiene 2 columnas en tu HTML, las otras 3)
+        if (config.tipoBD === 'Inasistencia') {
+            fila.innerHTML = `
+                <td>${registro.usuario}</td>
+                <td>Falta registrada hoy</td>
+            `;
+        } else {
+            fila.innerHTML = `
+                <td>${registro.usuario}</td>
+                <td>1 (Hoy)</td>
+                <td>${registro.marca}</td>
+            `;
+        }
+        tbody.appendChild(fila);
+      });
+    }
+  } catch (error) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Error al cargar datos del servidor.</td></tr>';
+  }
+}
+
+// 1. Configurar los botones de descarga de PDF al final de cada tabla
+reportesConfig.forEach((config) => {
+  const seccion = document.querySelector(`#${config.idSeccion}`);
+  
   const botonPdf = document.createElement('button');
   botonPdf.className = 'btn-action btn-crear';
-  botonPdf.textContent = 'Descargar Reporte PDF';
+  botonPdf.textContent = `Descargar PDF de ${config.tipoBD}s`;
   botonPdf.style.marginTop = '15px';
+  
+  // Al hacer clic, abre la ruta antigua para descargar el PDF generado por pdfkit
   botonPdf.addEventListener('click', () => {
-    window.open(endpoint, '_blank'); // el backend ya genera el PDF en este endpoint
+    window.open(config.endpointPdf, '_blank'); 
   });
+  
   seccion.appendChild(botonPdf);
+});
+
+// 2. Escuchar los clics en el menú lateral de admin.html para cargar la tabla
+document.querySelectorAll('.sidebar button').forEach(boton => {
+  boton.addEventListener('click', () => {
+    const action = boton.getAttribute('onclick');
+    if (action && action.includes('reporteAtrasos')) cargarTablaReporte(reportesConfig[0]);
+    if (action && action.includes('reporteSalidas')) cargarTablaReporte(reportesConfig[1]);
+    if (action && action.includes('reporteInasistencias')) cargarTablaReporte(reportesConfig[2]);
+  });
 });
 
 // ============================================================
@@ -193,5 +209,5 @@ reportesConfig.forEach(({ idSeccion, idTabla, endpoint, columnas }) => {
 // ============================================================
 document.querySelector('.btn-cerrar-sesion').addEventListener('click', () => {
   localStorage.clear();
-  window.location.href = 'index.html';
+  window.location.href = 'login.html';
 });
