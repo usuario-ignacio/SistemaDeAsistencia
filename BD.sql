@@ -11,10 +11,8 @@ CREATE TABLE usuario (
 );
 
 INSERT INTO usuario (usuario, clave, rol, email, numero) VALUES 
-('vicho','peluconaconfalda','usuario','vicho@gmail.com','12345678'),
-('jose','password','admin','jose@gmail.com','12345678'),
-('ignacio','password','admin','ignacio@gmail.com','12345678'),
-('fenia','password','admin','fenia@gmail.com','12345678');
+('admin','$2b$10$eOsywd0468GOWFcuN25ew.sPfrnlKYyGiX0.R.ETsbNnZpBgntFAq','admin','admin','admin'),
+('user','$2b$10$sIdpzlML84dEyFpBmfhQheSMVLQn66zmEHJ4T2u1.cHRrwPnEL2Vy','user','user','user');
 
 
 CREATE TABLE asistencia (
